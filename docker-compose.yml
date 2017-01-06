@@ -1,0 +1,40 @@
+version: "2"
+
+services:
+
+  drupal:
+      build: ./drupal
+      env_file: ./drupal/common.env
+      labels:
+          - "com.example.description: Drupal Environment"
+          - "version: 0.5"
+          - "description: Using Drupal:7-Apache-fpm build"
+      links:
+          - mariadb
+      ports:
+          - 80:80
+
+  mariadb:
+      build: ./mariadb
+      env_file: ./mariadb/common.env
+      volumes_from:
+        - dbdata
+      labels:
+          - "com.example.description: Database Environment"
+          - "version: 0.5"
+          - "description: Using MariaDB to host NetplayTV SQL"
+      command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  pma:
+    image: phpmyadmin/phpmyadmin:latest
+    env_file: ./pma/setup.env
+    links:
+      - mariadb
+    ports:
+      - 8080:80
+
+  dbdata:
+      build: ./mariadb
+      volumes:
+        - ./mariadb/dumpfiles:/docker-entrypoint-initdb.d
+      command: "true"
