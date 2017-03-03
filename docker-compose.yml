@@ -2,17 +2,24 @@ version: "2"
 
 services:
 
-  drupal:
-      build: ./drupal
-      env_file: ./drupal/common.env
+  press:
+      image: wordpress
+      environment:
+          - WORDPRESS_DB_NAME=xwnett_db1
+          - WORDPRESS_DB_USER=root
+          - WORDPRESS_DB_PASSWORD=secret
+          - WORDPRESS_TABLE_PREFIX=site_
+          - WORDPRESS_DB_HOST=mariadb
+      volumes:
+          - ./wpress/backup:/var/www/html
       labels:
-          - "com.example.description: Drupal Environment"
+          - "com.example.description: Wordpress Environment"
           - "version: 0.5"
-          - "description: Using Drupal:7-Apache-fpm build"
+          - "description: Using PHP:7-Apache-fpm build"
       links:
-          - mariadb
+          - mariadb:mysql
       ports:
-          - 80:80
+          - "192.168.2.2:80:80"
 
   mariadb:
       build: ./mariadb
@@ -27,11 +34,13 @@ services:
 
   pma:
     image: phpmyadmin/phpmyadmin:latest
-    env_file: ./pma/setup.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - PMA_HOST=mariadb
     links:
-      - mariadb
+      - mariadb:mysql
     ports:
-      - 8080:80
+      - "8181:80"
 
   dbdata:
       build: ./mariadb
